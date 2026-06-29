@@ -1,19 +1,24 @@
-import type { Column } from "@/types/datagrid.types";
+import type { DataGridHeaderProps } from "@/types/datagrid.types";
 
-type Props<T> = {
-  columns: Column<T>[];
-};
-
-const DataGridHeader = <T,>({ columns }: Props<T>) => {
+const DataGridHeader = <T,>({
+  columns,
+  sortColumn,
+  direction,
+  toggleSort,
+  filters,
+  setFilter,
+}: DataGridHeaderProps<T>) => {
   return (
     <thead className="bg-gray-50 dark:bg-gray-800">
       <tr>
         {columns.map((col) => {
-          const isSortable = !!col.sortable;
+          const isSortable = col.sortable !== false;
+          const isActiveSort = isSortable && sortColumn === col.key;
 
           return (
             <th
               key={String(col.key)}
+              onClick={isSortable ? () => toggleSort(col.key) : undefined}
               className={`
                 px-3 
                 py-2 
@@ -38,13 +43,34 @@ const DataGridHeader = <T,>({ columns }: Props<T>) => {
 
                 {isSortable && (
                   <span className="text-xs text-gray-400 dark:text-gray-500">
-                    &#x25B2;&#x25BC;
+                    {!isActiveSort && "↕"}
+                    {isActiveSort && direction === "asc" && "▲"}
+                    {isActiveSort && direction === "desc" && "▼"}
                   </span>
                 )}
               </div>
             </th>
           );
         })}
+      </tr>
+      <tr>
+        {columns.map((col) => (
+          <th
+            key={String(col.key)}
+            className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700"
+          >
+            {col.filterable && (
+              <input
+                type="text"
+                value={filters[col.key] ?? ""}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setFilter(col.key, e.target.value)}
+                placeholder={`Filter ${col.header}...`}
+                className="bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+          </th>
+        ))}
       </tr>
     </thead>
   );
