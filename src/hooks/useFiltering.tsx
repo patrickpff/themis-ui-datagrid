@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import type { DataGridFilters } from "..";
+import type { Column, DataGridFilters } from "..";
+import { matchesNumericFilter } from "@/utils/matchesNumericFilter";
 
-export const useFiltering = <T,>(data: T[]) => {
+export const useFiltering = <T,>(data: T[], columns: Column<T>[]) => {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<DataGridFilters<T>>({});
 
@@ -13,7 +14,7 @@ export const useFiltering = <T,>(data: T[]) => {
   };
 
   const filteredData = useMemo(() => {
-    let result = data;
+    let result = [...data];
 
     // Global Search
     if (search.trim()) {
@@ -29,21 +30,48 @@ export const useFiltering = <T,>(data: T[]) => {
     // Column Filters
     result = result.filter((row) =>
       (Object.entries(filters) as [keyof T, string][]).every(
-        ([column, value]) => {
-          const filterValue = value?.trim();
+        ([columnKey, filter]) => {
+          const filterValue = filter?.trim();
+
           if (!filterValue) {
             return true;
           }
 
-          return String(row[column])
-            .toLowerCase()
-            .includes(filterValue.toLowerCase());
+          const column = columns.find((c) => c.key === columnKey);
+
+          const cellValue = row[columnKey];
+
+          switch (column?.type) {
+            case "number": {
+              const numericValue = Number(cellValue);
+
+              if (Number.isNaN(numericValue)) {
+                return false;
+              }
+
+              const isNumericExpression =
+                /^[<>]=?\d+$/.test(filterValue) ||
+                /^\d+\s*-\s*\d+$/.test(filterValue);
+
+              if (isNumericExpression) {
+                return matchesNumericFilter(numericValue, filterValue);
+              }
+
+              // fallback to partial search
+              return String(cellValue).includes(filterValue);
+            }
+
+            default:
+              return String(cellValue)
+                .toLowerCase()
+                .includes(filterValue.toLowerCase());
+          }
         },
       ),
     );
 
     return result;
-  }, [data, search, filters]);
+  }, [data, columns, search, filters]);
 
   return {
     search,

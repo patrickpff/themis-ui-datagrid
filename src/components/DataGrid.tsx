@@ -14,8 +14,10 @@ const DataGrid = <T,>({
   searchable = false,
   columnFilters = true,
 }: DataGridProps<T>) => {
-  const { search, setSearch, filters, setFilter, filteredData } =
-    useFiltering(data);
+  const { search, setSearch, filters, setFilter, filteredData } = useFiltering(
+    data,
+    columns,
+  );
   const { sortedData, sortColumn, direction, toggleSort } =
     useSorting(filteredData);
 
@@ -58,6 +60,11 @@ const DataGrid = <T,>({
             dark:border-gray-600
             bg-white
             dark:bg-gray-900
+            text-gray-900
+            dark:text-gray-100
+            focus:ring-2
+            focus:ring-blue-500
+            focus:outline-none
             px-3
             py-2
             text-sm

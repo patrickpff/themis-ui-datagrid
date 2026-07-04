@@ -19,9 +19,9 @@ const columns: Column<Books>[] = [
   { key: "imageLink", header: "Image Link", filterable: true },
   { key: "language", header: "Language", filterable: true },
   { key: "link", header: "Link", filterable: true, type: "link" },
-  { key: "pages", header: "Pages", filterable: true },
+  { key: "pages", header: "Pages", filterable: true, type: "number" },
   { key: "title", header: "Title", filterable: true },
-  { key: "year", header: "Year", filterable: true },
+  { key: "year", header: "Year", filterable: true, type: "number" },
 ];
 
 export default function App() {
