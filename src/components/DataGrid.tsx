@@ -33,15 +33,14 @@ const DataGrid = <T,>({
   return (
     <div
       className="
-        w-full 
-        rounded-lg 
-        border 
-        border-gray-200 
-        dark:border-gray-800 
-        bg-white 
-        dark:bg-gray-900 
-        shadow-sm 
-        overflow-x-auto
+      w-full
+      rounded-lg
+      border
+      border-gray-200
+      dark:border-gray-800
+      bg-white
+      dark:bg-gray-900
+      shadow-sm
     "
     >
       {searchable && (
@@ -52,31 +51,47 @@ const DataGrid = <T,>({
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search..."
             className="
-        w-full
-        rounded-md
-        border
-        border-gray-300
-        dark:border-gray-600
-        bg-white
-        dark:bg-gray-900
-        px-3
-        py-2
-        text-sm
-      "
+            w-full
+            rounded-md
+            border
+            border-gray-300
+            dark:border-gray-600
+            bg-white
+            dark:bg-gray-900
+            px-3
+            py-2
+            text-sm
+          "
           />
         </div>
       )}
-      <table className="w-full border-collapse text-sm text-gray-700 dark:text-gray-200">
-        <DataGridHeader
-          columns={columns}
-          sortColumn={sortColumn}
-          direction={direction}
-          toggleSort={toggleSort}
-          filters={filters}
-          setFilter={setFilter}
-        />
-        <DataGridBody data={pagedData} columns={columns} loading={loading} />
-      </table>
+
+      {/* Only table scrolls */}
+      <div
+        className="
+        overflow-x-auto 
+        scrollbar 
+        scrollbar-h-1 
+        scrollbar-track-transparent 
+        scrollbar-thumb-gray-300 
+        dark:scrollbar-thumb-gray-700 
+        hover:scrollbar-thumb-gray-400 
+        dark:hover:scrollbar-thumb-gray-600"
+      >
+        <table className="w-full border-collapse text-sm text-gray-700 dark:text-gray-200">
+          <DataGridHeader
+            columns={columns}
+            sortColumn={sortColumn}
+            direction={direction}
+            toggleSort={toggleSort}
+            filters={filters}
+            setFilter={setFilter}
+            showFilters={columnFilters}
+          />
+          <DataGridBody data={pagedData} columns={columns} loading={loading} />
+        </table>
+      </div>
+
       {pagination?.pageSize && (
         <DataGridPagination
           page={currentPage}

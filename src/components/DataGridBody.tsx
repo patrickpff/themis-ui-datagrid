@@ -46,6 +46,34 @@ const DataGridBody = <T,>({ columns, data, loading = false }: Props<T>) => {
           >
             {columns.map((col) => {
               const value = row[col.key];
+              if (col.type === "link") {
+                return (
+                  <td key={String(col.key)} className="px-3 py-2">
+                    <a
+                      href={String(value ?? "")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500"
+                    >
+                      🔗
+                    </a>
+                  </td>
+                );
+              }
+              if (col.type === "boolean") {
+                return (
+                  <td key={String(col.key)} className="px-3 py-2">
+                    <a
+                      href={String(value ?? "")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500"
+                    >
+                      ✓
+                    </a>
+                  </td>
+                );
+              }
 
               return (
                 <td key={String(col.key)} className="px-3 py-2">

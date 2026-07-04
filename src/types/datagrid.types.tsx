@@ -1,6 +1,16 @@
+export type ColumnType =
+  | "text"
+  | "number"
+  | "boolean"
+  | "date"
+  | "link"
+  | "image"
+  | "custom";
+
 export type Column<T> = {
   key: keyof T;
   header: string;
+  type?: ColumnType;
   sortable?: boolean;
   filterable?: boolean;
   searchable?: boolean;
@@ -49,6 +59,7 @@ export type DataGridHeaderProps<T> = {
 
   filters: DataGridFilters<T>;
   setFilter: (column: keyof T, value: string) => void;
+  showFilters?: boolean;
 };
 
 export type UseFilteringResult<T> = {

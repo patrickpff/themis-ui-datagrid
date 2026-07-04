@@ -15,13 +15,13 @@ type Books = {
 
 const columns: Column<Books>[] = [
   { key: "author", header: "Author", filterable: true },
-  { key: "country", header: "Country" },
-  { key: "imageLink", header: "Image Link" },
-  { key: "language", header: "Language" },
-  { key: "link", header: "Link" },
-  { key: "pages", header: "Pages" },
+  { key: "country", header: "Country", filterable: true },
+  { key: "imageLink", header: "Image Link", filterable: true },
+  { key: "language", header: "Language", filterable: true },
+  { key: "link", header: "Link", filterable: true, type: "link" },
+  { key: "pages", header: "Pages", filterable: true },
   { key: "title", header: "Title", filterable: true },
-  { key: "year", header: "Year" },
+  { key: "year", header: "Year", filterable: true },
 ];
 
 export default function App() {
@@ -49,6 +49,7 @@ export default function App() {
         columns={columns}
         data={data}
         loading={loading}
+        searchable={true}
         pagination={{ pageSize: 5, maxVisiblePages: 5 }}
       />
     </div>
