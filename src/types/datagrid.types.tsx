@@ -14,6 +14,7 @@ export type Column<T> = {
   sortable?: boolean;
   filterable?: boolean;
   searchable?: boolean;
+  hidden?: boolean;
   render?: (value: T[keyof T], row: T) => React.ReactNode;
 };
 
