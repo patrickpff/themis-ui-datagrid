@@ -205,37 +205,66 @@ const DataGrid = <T,>({
                     {columns.map((column) => {
                       const columnKey = column.key;
                       const isVisible = visibleColumns.includes(columnKey);
+                      const isLastVisibleColumn =
+                        isVisible && visibleColumns.length === 1;
 
                       return (
                         <label
                           key={String(columnKey)}
-                          className="
+                          title={
+                            isLastVisibleColumn
+                              ? "At least one column must remain visible"
+                              : undefined
+                          }
+                          className={`
                             flex
                             items-center
                             gap-3
                             px-3
                             py-2
-                            cursor-pointer
                             text-gray-700
                             dark:text-gray-200
-                            hover:bg-gray-100
-                            dark:hover:bg-gray-700
-                          "
+                            ${
+                              isLastVisibleColumn
+                                ? "cursor-not-allowed opacity-60"
+                                : "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                            }
+                          `}
                         >
                           <input
                             type="checkbox"
                             checked={isVisible}
+                            disabled={isLastVisibleColumn}
                             onChange={() => toggleColumn(columnKey)}
+                            title={
+                              isLastVisibleColumn
+                                ? "At least one column must remain visible"
+                                : undefined
+                            }
                             className="
                               rounded
                               border-gray-300
                               dark:border-gray-600
                               text-blue-600
                               focus:ring-blue-500
+                              disabled:cursor-not-allowed
+                              disabled:opacity-50
                             "
                           />
 
                           <span>{column.header}</span>
+                          {isLastVisibleColumn && (
+                            <span
+                              className="
+                                ml-auto
+                                text-xs
+                                text-gray-400
+                                dark:text-gray-500
+                              "
+                            >
+                              Required
+                            </span>
+                          )}
                         </label>
                       );
                     })}

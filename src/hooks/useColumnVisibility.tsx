@@ -94,7 +94,16 @@ export const useColumnVisibility = <T,>(
    */
   const toggleColumn = (columnKey: keyof T) => {
     setVisibleColumns((current) => {
-      if (current.includes(columnKey)) {
+      const isVisible = current.includes(columnKey);
+
+      /**
+       * Don't allow hiding the last visible column.
+       */
+      if (isVisible && current.length === 1) {
+        return current;
+      }
+
+      if (isVisible) {
         return current.filter((key) => key !== columnKey);
       }
 
