@@ -21,10 +21,14 @@ export type Column<T> = {
 export type DataGridProps<T> = {
   columns: Column<T>[];
   data: T[];
+
   loading?: boolean;
   searchable?: boolean;
-  pagination?: DataGridPaginationOptions;
   columnFilters?: boolean;
+
+  columnVisibility?: ColumnVisibilityConfig;
+
+  pagination?: DataGridPaginationOptions;
 };
 
 export type SortDirection = "asc" | "desc";
@@ -72,4 +76,9 @@ export type UseFilteringResult<T> = {
   setFilter: (column: keyof T, value: string) => void;
 
   filteredData: T[];
+};
+
+export type ColumnVisibilityConfig = {
+  enabled?: boolean;
+  persistenceKey?: string;
 };

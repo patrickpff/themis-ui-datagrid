@@ -50,7 +50,14 @@ export default function App() {
         data={data}
         loading={loading}
         searchable={true}
-        pagination={{ pageSize: 5, maxVisiblePages: 5 }}
+        pagination={{
+          pageSize: 5,
+          maxVisiblePages: 5,
+        }}
+        columnVisibility={{
+          enabled: true,
+          persistenceKey: "books-grid",
+        }}
       />
     </div>
   );
