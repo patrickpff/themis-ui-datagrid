@@ -2,24 +2,53 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { Column } from "@/types/datagrid.types";
 
+type PersistedColumnVisibility = {
+  visible: string[];
+  known: string[];
+};
+
 export const useColumnVisibility = <T,>(
   columns: Column<T>[],
   persistenceKey: string,
 ) => {
-  /*
-   * Columns visible by default.
-   *
-   * hidden: true means the column starts hidden.
-   */
   const defaultVisibleColumns = useMemo<Array<keyof T>>(
     () =>
       columns.filter((column) => !column.hidden).map((column) => column.key),
     [columns],
   );
 
-  /*
-   * Load persisted visibility.
-   */
+  const currentColumnKeys = useMemo(
+    () => columns.map((column) => String(column.key)),
+    [columns],
+  );
+
+  const [knownColumns, setKnownColumns] = useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      return currentColumnKeys;
+    }
+
+    try {
+      const stored = localStorage.getItem(persistenceKey);
+
+      if (!stored) {
+        return currentColumnKeys;
+      }
+
+      const parsed = JSON.parse(stored);
+
+      if (parsed && typeof parsed === "object" && Array.isArray(parsed.known)) {
+        return parsed.known;
+      }
+
+      /*
+       * Old format compatibility.
+       */
+      return currentColumnKeys;
+    } catch {
+      return currentColumnKeys;
+    }
+  });
+
   const [visibleColumns, setVisibleColumns] = useState<Array<keyof T>>(() => {
     if (typeof window === "undefined") {
       return defaultVisibleColumns;
@@ -32,62 +61,101 @@ export const useColumnVisibility = <T,>(
         return defaultVisibleColumns;
       }
 
-      const storedColumns = JSON.parse(stored);
+      const parsed = JSON.parse(stored);
 
-      if (!Array.isArray(storedColumns)) {
-        return defaultVisibleColumns;
-      }
-
-      const currentColumnKeys = new Set(
-        columns.map((column) => String(column.key)),
-      );
+      const currentKeys = new Set(currentColumnKeys);
 
       /*
-       * Only restore columns that still exist.
+       * New format.
        */
-      return storedColumns.filter((key) =>
-        currentColumnKeys.has(String(key)),
-      ) as Array<keyof T>;
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        Array.isArray(parsed.visible)
+      ) {
+        return parsed.visible.filter((key: string) =>
+          currentKeys.has(key),
+        ) as Array<keyof T>;
+      }
+
+      /*
+       * Old format.
+       */
+      if (Array.isArray(parsed)) {
+        return parsed.filter((key) => currentKeys.has(String(key))) as Array<
+          keyof T
+        >;
+      }
+
+      return defaultVisibleColumns;
     } catch {
       return defaultVisibleColumns;
     }
   });
 
   /*
-   * Synchronize when the column definition changes.
-   *
-   * IMPORTANT:
-   *
-   * We only remove columns that no longer exist.
-   *
-   * We do NOT automatically add missing columns here,
-   * because a missing column may simply mean that the
-   * user intentionally hid it.
+   * Synchronize with the current column definitions.
    */
   useEffect(() => {
     setVisibleColumns((current) => {
-      const currentColumnKeys = new Set(
-        columns.map((column) => String(column.key)),
+      const knownSet = new Set(knownColumns);
+
+      /*
+       * Remove columns that no longer exist.
+       */
+      const existingColumns = current.filter((key) =>
+        currentColumnKeys.includes(String(key)),
       );
 
-      return current.filter((key) => currentColumnKeys.has(String(key)));
+      /*
+       * Respect hidden: true.
+       */
+      const hiddenColumnKeys = new Set(
+        columns
+          .filter((column) => column.hidden)
+          .map((column) => String(column.key)),
+      );
+
+      const visibleExistingColumns = existingColumns.filter(
+        (key) => !hiddenColumnKeys.has(String(key)),
+      );
+
+      /*
+       * Add genuinely new columns using their default visibility.
+       */
+      const newColumns = columns
+        .filter((column) => !knownSet.has(String(column.key)) && !column.hidden)
+        .map((column) => column.key);
+
+      return [...visibleExistingColumns, ...newColumns];
     });
-  }, [columns]);
+
+    /*
+     * Once synchronization has happened, all current
+     * columns become known.
+     */
+    setKnownColumns(currentColumnKeys);
+  }, [columns, currentColumnKeys]);
 
   /*
-   * Persist visibility changes.
+   * Persist configuration.
    */
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
+    const configuration: PersistedColumnVisibility = {
+      visible: visibleColumns.map((key) => String(key)),
+      known: knownColumns,
+    };
+
     try {
-      localStorage.setItem(persistenceKey, JSON.stringify(visibleColumns));
+      localStorage.setItem(persistenceKey, JSON.stringify(configuration));
     } catch {
       // Ignore localStorage errors.
     }
-  }, [visibleColumns, persistenceKey]);
+  }, [visibleColumns, knownColumns, persistenceKey]);
 
   /*
    * Toggle column visibility.
@@ -96,8 +164,8 @@ export const useColumnVisibility = <T,>(
     setVisibleColumns((current) => {
       const isVisible = current.includes(columnKey);
 
-      /**
-       * Don't allow hiding the last visible column.
+      /*
+       * At least one column must remain visible.
        */
       if (isVisible && current.length === 1) {
         return current;
@@ -112,7 +180,7 @@ export const useColumnVisibility = <T,>(
   };
 
   /*
-   * Restore the default column configuration.
+   * Restore developer defaults.
    */
   const resetColumns = () => {
     setVisibleColumns(defaultVisibleColumns);

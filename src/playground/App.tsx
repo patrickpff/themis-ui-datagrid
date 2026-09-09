@@ -16,7 +16,13 @@ type Books = {
 const columns: Column<Books>[] = [
   { key: "author", header: "Author", filterable: true },
   { key: "country", header: "Country", filterable: true },
-  { key: "imageLink", header: "Image Link", filterable: true },
+  {
+    key: "imageLink",
+    header: "Image Link",
+    filterable: true,
+    hidden: true,
+    type: "image",
+  },
   { key: "language", header: "Language", filterable: true },
   { key: "link", header: "Link", filterable: true, type: "link" },
   { key: "pages", header: "Pages", filterable: true, type: "number" },
